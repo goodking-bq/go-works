@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  zfcj:
+    container_name: zfcj
+    image: registry.cn-hangzhou.aliyuncs.com/golden/zfcj
+    volumes:
+      - ./nutsdb:/tmp/nutsdb
+      - ./log:/var/log
+    expose:
+      - 8088
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zfcj.entrypoints=web"
+      - "traefik.http.routers.zfcj.rule=Host(`zfcj.home.com`)"
+      - "traefik.http.services.zfcj.loadbalancer.server.port=8088"
+networks:
+  traefik:
+    external: true
