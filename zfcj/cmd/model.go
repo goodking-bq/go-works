@@ -3,8 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/xujiajun/nutsdb"
 	"log"
+
+	"github.com/xujiajun/nutsdb"
 )
 
 var (
@@ -14,6 +15,7 @@ var (
 	today  = []byte("today")
 )
 
+//CjData data type
 type CjData struct {
 	HouseType int     `json:"house_type"` //1 商品房 2 二手房
 	ZoneType  int     `json:"zone_type"`  // 1 中心城区 2 郊区新城 3 全市
@@ -23,11 +25,13 @@ type CjData struct {
 	Date      string  `json:"date"`
 }
 
+// Json return json string
 func (d *CjData) Json() []byte {
 	r, _ := json.Marshal(d)
 	return r
 }
 
+// Save save data
 func (d *CjData) Save() error {
 	todayKey := fmt.Sprintf("%s_%d_%d_%d", today, d.HouseType, d.ZoneType, d.DataType)
 	todayData := getToday(todayKey)
@@ -111,7 +115,7 @@ func Query(zoneType, houseType, dataType int, day bool) []CjData {
 			}
 			return nil
 		}); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return data
 }

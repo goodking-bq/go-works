@@ -18,16 +18,18 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	assetfs "github.com/elazarl/go-bindata-assetfs"
-	"github.com/xujiajun/nutsdb"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/spf13/cobra"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
+	"github.com/xujiajun/nutsdb"
+
 	"zfcj/cmd/bindata"
+
+	"github.com/spf13/cobra"
 )
 
 func apiHandler(w http.ResponseWriter, req *http.Request) {

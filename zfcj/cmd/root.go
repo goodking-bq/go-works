@@ -17,13 +17,14 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"time"
+
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/xujiajun/nutsdb"
-	"log"
-	"os"
-	"time"
 )
 
 var cfgFile string
@@ -104,5 +105,4 @@ func initDb() {
 	}
 	db = _db
 	println("db initd")
-
 }

@@ -17,15 +17,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/antchfx/htmlquery"
-	"github.com/spf13/cobra"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/antchfx/htmlquery"
+	"github.com/spf13/cobra"
 )
 
+// crawlUrl crawl
 func crawlUrl(url string) {
 	defer http.Get("http://localhost:8088/reload")
 	client := &http.Client{
