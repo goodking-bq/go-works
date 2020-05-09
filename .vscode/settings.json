@@ -1,0 +1,15 @@
+{
+    "go.inferGopath": false,
+    // "go.gopath": "/Users/golden/Go:${workspaceFolder}",
+    "terminal.integrated.env.windows": {
+        "GOPATH": "${workspaceFolder}",
+    },
+    "terminal.integrated.env.macos": {
+        "GOPATH": "/Users/golden/Go",
+    },
+    "terminal.integrated.env.linux": {
+        "GOPATH": "/home/golden/go:${workspaceFolder}"
+    },
+    "go.gopath": "/Users/golden/Go:${workspaceFolder}",
+    "go.goroot": null
+}
