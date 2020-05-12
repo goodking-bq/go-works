@@ -1,0 +1,31 @@
+<html>
+
+<head>
+    <title>帮助</title>
+</head>
+
+<body>
+    <ul>
+        <li> 获取IP的区域信息
+            <ul>
+                <li>URL:
+                    <code>/get</code> <strong>获取本机</strong>
+                </li>
+                <li>URL: <code>/get?ip=1.1.1.1</code> <strong>获取特定ip</strong></li>
+                返回JSON字符串：<br /><code>{"country_name":"中国","region_name":"四川","city_name":"成都","owner_domain":"","isp_domain":"","latitude":"","longitude":"","timezone":"","utc_offset":"","china_admin_code":"","idd_code":"","country_code":"","continent_code":"","idc":"","base_station":"","country_code3":"","european_union":"","currency_code":"","currency_name":"","anycast":"","line":"","district_info":{"country_name":"","region_name":"","city_name":"","district_name":"","china_admin_code":"","covering_radius":"","latitude":"","longitude":""},"route":"","asn":"","asn_info":null,"area_code":""}</code>
+            </ul>
+        </li>
+        <br />
+        <li> 检查ip是否满足条件
+            <ul>
+                <li>URL:
+                    <code>/check</code> <strong>检查本机</strong>
+                </li>
+                <li>URL: <code>/check?ip=1.1.1.1</code> <strong>检查特定ip</strong></li>
+                返回数字：<br /><code>0(未通过) 或 1(通过) </code>
+            </ul>
+        </li>
+    </ul>
+</body>
+
+</html>
