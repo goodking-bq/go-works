@@ -4,16 +4,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/buaazp/fasthttprouter"
 	"github.com/valyala/fasthttp"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
 	myIpDB "ip-check/ipdb"
-
-	"ip-check/ipdb-go"
 )
 
 var (
@@ -22,54 +19,59 @@ var (
 	help    bool
 	fRegion string
 	fCity   string
+	db      *ipdb.City
 )
 
 func getCityInfo(ip string) *ipdb.CityInfo {
-	body, _ := myIpDB.Asset("ipipfree.ipdb")
-	db, err := ipdb.NewCityBytes(body)
-	if err != nil {
-		log.Fatal(err)
-	}
 	info, _ := db.FindInfo(ip, "CN")
-
 	return info
 }
 
-
-func getRemoteIp(ctx *fasthttp.RequestCtx) string{
+func getRemoteIp(ctx *fasthttp.RequestCtx) string {
 	remoteIp := string(ctx.QueryArgs().Peek("ip"))
-	if remoteIp == nil {
-		remoteIp = ctx.RemoteIP().String()
+	if remoteIp == "" {
+		remoteIp = string(ctx.Request.Header.Peek("X-Forwarded-For"))
+		if index := strings.IndexByte(remoteIp, ','); index >= 0 {
+			remoteIp = remoteIp[0:index]
+			//获取最开始的一个 即 1.1.1.1
+		}
+		remoteIp = strings.TrimSpace(remoteIp)
+		if len(remoteIp) > 0 {
+			return remoteIp
+		}
+		remoteIp = strings.TrimSpace(string(ctx.Request.Header.Peek("X-Real-Ip")))
+		if len(remoteIp) > 0 {
+			return remoteIp
+		}
+		return ctx.RemoteIP().String()
 	}
 	return remoteIp
-}
 
+}
 
 // Get get url
 func Get(ctx *fasthttp.RequestCtx) {
-	remoteIp:=getRemoteIp(ctx)
+	remoteIp := getRemoteIp(ctx)
+	fmt.Println(remoteIp)
 	info, _ := json.Marshal(getCityInfo(remoteIp))
-	i,_:=fmt.Fprintln(ctx,info)
-	fmt.Println(i)
+	_, _ = fmt.Fprintf(ctx, string(info))
 }
 
-
-
-func checkRequest(w http.ResponseWriter, r *http.Request) {
-	remoteIp:=getRemoteIp(r)
+func Check(ctx *fasthttp.RequestCtx) {
+	remoteIp := getRemoteIp(ctx)
 	info := getCityInfo(remoteIp)
 	if info.RegionName != "" && strings.Contains(fRegion, info.RegionName) {
-		io.WriteString(w, "0")
+		_, _ = fmt.Fprintf(ctx, "0")
 		return
 	}
 	if info.CityName != "" && strings.Contains(fCity, info.CityName) {
-		io.WriteString(w, "0")
+		_, _ = fmt.Fprintf(ctx, "0")
 		return
 	}
-	io.WriteString(w, "1")
+	_, _ = fmt.Fprintf(ctx, "1")
 }
 
-func helpRequest(w http.ResponseWriter, r *http.Request) {
+func Help(ctx *fasthttp.RequestCtx) {
 	html := `<html>
 
 <head>
@@ -101,9 +103,13 @@ func helpRequest(w http.ResponseWriter, r *http.Request) {
 </body>
 
 </html>`
-	io.WriteString(w, html)
+	ctx.Response.Header.Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = fmt.Fprintf(ctx, html)
 }
 
+func Test(ctx *fasthttp.RequestCtx) {
+	_, _ = fmt.Fprintf(ctx, "this is the second part of body\n")
+}
 func main() {
 	flag.BoolVar(&help, "h", false, "帮助")
 	flag.StringVar(&host, "host", "", "侦听ip")
@@ -112,19 +118,23 @@ func main() {
 	flag.StringVar(&fCity, "c", "", "检查时禁用城市，逗号隔开")
 	flag.Parse()
 	if help {
-		fmt.Fprintf(os.Stderr, `Usage: ipcheck [-host [host]] [-p [port]]
+		_, _ = fmt.Fprintf(os.Stderr, `Usage: ipcheck [-host [host]] [-p [port]]
 
 Options:
 `)
 		flag.PrintDefaults()
 		return
 	}
-	http.HandleFunc("/get", doRequest)      //   设置访问路由
-	http.HandleFunc("/help", helpRequest)   //   帮助
-	http.HandleFunc("/check", checkRequest) //   帮助
-	fmt.Printf("start server at %s:%s", host, port)
-	err := http.ListenAndServe(host+":"+port, nil) //设置监听的端口
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	body, _ := myIpDB.Asset("ipipfree.ipdb")
+	db, _ = ipdb.NewCityBytes(body)
+
+	router := fasthttprouter.New()
+	router.GET("/get", Get)
+	router.GET("/check", Check)
+	router.GET("/Help", Help)
+	router.GET("/test", Test)
+
+	fmt.Printf("start server at %s:%s\n", host, port)
+	log.Fatal(fasthttp.ListenAndServe(host+":"+port, router.Handler))
+
 }
